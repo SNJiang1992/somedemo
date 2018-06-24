@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #content {
+            width: 600px;
+            height: 300px;
+            margin: 0 auto;
+            list-style: none;
+            position: relative;
+            margin-top: 200px;
+        }
+
+        #content li {
+            width: 100px;
+            height: 100px;
+            background: rgb(104, 154, 208);
+            color: white;
+            position: absolute;
+            z-index: 1;
+        }
+
+
+        #add-li {
+            font-size: 70px;
+            text-align: center;
+            line-height: 88px;
+        }
+        #menu{
+            width: 90px;
+            height: 20px;
+            padding-left: 10px;
+            border-radius: 3px;
+            border: 1px solid #eee;
+            position: absolute;
+            display: none;
+            background: #eeeeee;
+            z-index: 2;
+        }
+        #menu:hover{
+            color: #fff;
+            background: rgb(97,155,248);
+            z-index: 2;
+        }
+        #dialog{
+            margin: 10px auto;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<ul id="content">
+    <li class="list-item">1</li>
+    <li id="add-li">+</li>
+</ul>
+<div id="menu">删除</div>
+<div id="dialog">
+    请输入内容 <input type="text" id = 'detail'>
+    <button id="sure">确定</button><button id="cancel">取消</button>
+</div>
+<script>
+
+
+
+
+    //获取元素
+    var content = document.getElementById('content');
+    var addBtn = document.getElementById('add-li');
+    var listArr = content.getElementsByClassName('list-item');
+    var menu = document.getElementById('menu')
+    var dialog = document.getElementById('dialog')
+    var detail = document.getElementById('detail')
+    var surebtn = document.getElementById('sure')
+    var cancelbtn = document.getElementById('cancel')
+    var startX, startY, moveX, moveY, x, y,domleft,domtop;
+    var areaArr = []
+
+    //元素布局
+    init()
+    function init() {
+        var lis = content.getElementsByTagName('li')
+        for (let i = 0;i<lis.length;i++){
+            lis[i].style.left = i%4*120+'px';
+            lis[i].style.top = Math.floor(i/4)*120+'px';
+        }
+    }
+
+
+
+    function getSwap() {
+        areaArr=[];
+        for (var i = 0;i<listArr.length;i++){
+            var left = listArr[i].offsetLeft;
+            var top = listArr[i].offsetTop;
+            areaArr.push({index:i,leftmin:left+50,topmin:top+50,leftmax:left+100,topmax:top+100})
+        }
+        console.log(areaArr)
+    }
+
+    //换值判断,移到元素右下角时会进行交换
+    function swapNum(dom) {
+        // 获取元素节点的交换区域
+
+        for(var i=0;i<areaArr.length;i++){
+            console.log(areaArr[i])
+            if (domleft>=areaArr[i].leftmin&&domleft<=areaArr[i].leftmax&&domtop>=areaArr[i].topmin&&domtop<=areaArr[i].topmax) {
+                console.log(areaArr[i].index)
+                var target= listArr[i].innerText
+                listArr[i].innerText = dom.innerText
+                dom.innerText = target
+            }
+        }
+
+    }
+
+
+    //添加右击事件
+
+
+
+    for (let i=0;i<listArr.length;i++){
+        //取消默认contextmenu事件并添加自定义删除事件
+        listArr[i].oncontextmenu = function(e){
+            console.log(e.button)
+            var self = this;
+            if (e.button == 2){
+                e.preventDefault();
+                menu.style.display = 'block';
+                menu.style.left = e.clientX+'px';
+                menu.style.top = e.clientY+'px';
+                menu.addEventListener('click',function () {
+                    content.removeChild(self)
+                    init();
+                    menu.style.display = 'none'
+                })
+            }
+        }
+        listArr[i].onmousedown=function (e) {
+            getSwap()
+            x = this.offsetLeft;
+            y = this.offsetTop;
+            startX = e.clientX;
+            startY = e.clientY;
+            if (e.button==0){
+                this.style.zIndex='999';
+                console.log(x,y)
+                var that = this;
+                //为了避免拖动出this，事件绑定在document上
+                document.onmousemove = function (e) {
+                    console.log(that)
+                    moveX = e.clientX - startX
+                    moveY = e.clientY - startY
+                    that.style.left = x + moveX + 'px';
+                    that.style.top = y + moveY + 'px';
+                }
+
+
+                document.onmouseup = function () {
+                    //移除后移除拖动事件
+
+                    domleft =  that.offsetLeft;
+                    domtop = that.offsetTop;
+                    swapNum(that)
+                    that.style.zIndex='1'
+                    that.style.left = x+'px'
+                    that.style.top = y+'px'
+                    document.onmousemove = function () {
+                        return false
+                    }
+                }
+            }
+        }
+    }
+
+
+    addBtn.addEventListener('click',function () {
+        dialog.style.display = 'block';
+    })
+    surebtn.onclick = function () {
+        var newLi = document.createElement('li');
+        newLi.className='list-item';
+        newLi.innerText = detail.value;
+        newLi.oncontextmenu = function(e){
+            var self = this;
+            if (e.button == 2){
+                e.preventDefault();
+                menu.style.display = 'block';
+                menu.style.left = e.clientX+'px';
+                menu.style.top = e.clientY+'px';
+                menu.addEventListener('click',function () {
+                    content.removeChild(self)
+                    init()
+                    menu.style.display = 'none'
+                })
+            }
+        }
+        newLi.onmousedown = function (e) {
+            getSwap()
+            x = this.offsetLeft;
+            y = this.offsetTop;
+            startX = e.clientX;
+            startY = e.clientY;
+            if (e.button==0){
+                this.style.zIndex='999';
+                console.log(x,y)
+                var that = this;
+                //为了避免拖动出this，事件绑定在document上
+                document.onmousemove = function (e) {
+                    moveX = e.clientX - startX
+                    moveY = e.clientY - startY
+                    that.style.left = x + moveX + 'px';
+                    that.style.top = y + moveY + 'px';
+                }
+
+
+                document.onmouseup = function () {
+                    domleft =  that.offsetLeft;
+                    domtop = that.offsetTop;
+                    swapNum(that)
+                    //移除后移除拖动事件
+                    that.style.zIndex='1'
+                    that.style.left = x+'px'
+                    that.style.top = y+'px'
+                    document.onmousemove = function () {
+                        return false
+                    }
+                }
+            }
+        }
+        content.insertBefore(newLi,addBtn)
+        init();
+        dialog.style.display = 'none';
+    }
+    cancelbtn.onclick = function () {
+        dialog.style.display = 'none';
+    }
+
+</script>
+</body>
+</html>
