@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="shopcart">
+    <input type="checkbox" value="5" checked>5
+    <input type="checkbox" value="3">3
+    <input type="checkbox" value="5">5
+    <input type="checkbox" value="4">4
+    <input type="checkbox" value="7">7
+    <input type="checkbox" value="8">8
+    </div>
+合计<span id="sum"></span>
+</body>
+<script>
+    var shopcart = document.getElementById('shopcart');
+  var checks = shopcart.getElementsByTagName('input');
+  var sumTarget = document.getElementById('sum')
+ 
+  checkinit();
+ for(var i =0;i<checks.length;i++){
+     checks[i].addEventListener('change',function(){
+         checkinit();
+     })
+ }
+  function checkinit(){
+    var sum =0;
+    for (let index = 0; index < checks.length; index++) {
+
+      if (checks[index].checked) {
+          sum+=  parseFloat(checks[index].value)
+      }
+      sumTarget.innerText = sum
+  }
+  }
+
+
+</script>
+</html>
